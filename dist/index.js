@@ -158,7 +158,7 @@
   var createPaymentIntent = async (amount) => {
     try {
       let userslowlaneData = sessionStorage.getItem("userslowlane");
-      const response = await fetch("http://localhost:8787/create-payment", {
+      const response = await fetch("http://https://cloudflare-work.jabirtisou8072.workers.dev/create-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

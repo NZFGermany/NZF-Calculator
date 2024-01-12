@@ -7,7 +7,7 @@
   var init = async () => {
     let isIdealPayment = true;
     let isCardPayment = false;
-    const stripe = window.Stripe?.("pk_test_51OJjQxA8yQevovoJTjCBQdN1tLAHzrQ82wfGZymhr0fHRF0KH5U4ljIRcs9ZZMipzP7Bqabz7gEnj2g9IbfWcWeF0009IpfcQY");
+    const stripe = window.Stripe?.("pk_test_H8eR0kuNsulrMgeB3TWJOFEw00tMBle6cm");
     if (!stripe)
       return;
     const form = document.querySelector('[data-element="payment_form"]');

@@ -27,7 +27,7 @@
           return "Er is een onbekende fout opgetreden.";
       }
     };
-    const stripe = window.Stripe?.("pk_test_pk_test_H8eR0kuNsulrMgeB3TWJOFEw00tMBle6cm");
+    const stripe = window.Stripe?.("pk_test_H8eR0kuNsulrMgeB3TWJOFEw00tMBle6cm");
     if (!stripe)
       return;
     const form = document.querySelector('[data-element="payment_form"]');

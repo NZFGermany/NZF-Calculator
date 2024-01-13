@@ -173,7 +173,7 @@
                 console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
             }
         }
-    });
+    })
   };
   var createPaymentIntent = async (amount) => {
     try {

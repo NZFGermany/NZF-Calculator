@@ -4,6 +4,27 @@ const init = async () => {
     let isIdealPayment = true;
     let isCardPayment = false;
 
+    const translateStripeError = (error) => {
+        switch (error) {
+            case 'Your card has been declined.':
+                return 'Uw kaart is geweigerd.';
+            case 'Your card has insufficient funds.':
+                return 'Uw kaart heeft onvoldoende saldo.';
+            case 'Your card has expired.':
+                return 'Uw kaart is verlopen.';
+            case 'Your card\'s security code is incorrect.':
+                return 'De beveiligingscode van uw kaart is onjuist.';
+            case 'An error occurred while processing your card. Try again in a little bit.':
+                return 'Er is een fout opgetreden bij het verwerken van uw kaart. Probeer het over een poosje opnieuw.';
+            case 'Your card number is invalid.':
+                return 'Uw kaartnummer is ongeldig.';
+            case 'Your card was declined for making repeated attempts too frequently.':
+                return 'Uw kaart is geweigerd vanwege het te vaak herhalen van pogingen.';
+            default:
+                return 'Er is een onbekende fout opgetreden.';
+        }
+    };
+    
     const stripe = window.Stripe?.(STRIPE_KEY);
     if (!stripe) return;
 
@@ -145,30 +166,32 @@ const init = async () => {
                 },
                 return_url: `https://nationaal-zakat-fonds-rekenmachine.webflow.io/gegevens?paymentType=${paymentType}&paymentSort=card`,
             })
-            if(resultCardPayment.error) {
-                // Check and remove any existing failed message
-                var existingFailedMessage = document.querySelector('.failed-message');
-                if (existingFailedMessage && existingFailedMessage.parentNode) {
-                    existingFailedMessage.parentNode.removeChild(existingFailedMessage);
+            if (resultCardPayment.error) {
+                    // Vertaal de foutmelding
+                    const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || 'De betaling met uw Creditcard is niet gelukt, probeer het opnieuw.';
+                
+                    // Check and remove any existing failed message
+                    var existingFailedMessage = document.querySelector('.failed-message');
+                    if (existingFailedMessage && existingFailedMessage.parentNode) {
+                        existingFailedMessage.parentNode.removeChild(existingFailedMessage);
+                    }
+                
+                    // Create a new failed message div
+                    var failedMessage = document.createElement('div');
+                    failedMessage.classList.add('failed-message');
+                    failedMessage.textContent = translatedErrorMessage;
+                    failedMessage.style.color = 'red';
+                
+                    // Get the reference to the existing div where the new text should be inserted above
+                    var referenceDiv = document.querySelector('.impact-tabs-menu.w-tab-menu');
+                
+                    // Insert the new message
+                    if (referenceDiv && referenceDiv.parentNode) {
+                        referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
+                    } else {
+                        console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
+                    }
                 }
-
-                // Create a new failed message div
-                var failedMessage = document.createElement('div');
-                failedMessage.classList.add('failed-message'); // Assign a unique class for identification
-                failedMessage.textContent = resultCardPayment.error?.message || 'De betaling met uw Creditcard is niet gelukt, probeer het opnieuw.';
-                failedMessage.style.color = 'red';
-
-                // Get the reference to the existing div where the new text should be inserted above
-                var referenceDiv = document.querySelector('.impact-tabs-menu.w-tab-menu');
-
-                // Check if referenceDiv and its parentNode exist
-                if (referenceDiv && referenceDiv.parentNode) {
-                    referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
-                } else {
-                    // Handle the case when the element or its parent is not found
-                    console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
-                }
-            }
             else {
                 if(paymentType === 'riba') window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-riba`);
                 else if(paymentType === 'zakaat') window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-zakaat`);

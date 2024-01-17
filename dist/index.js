@@ -109,6 +109,7 @@
     idealBank.on("change", (event) => {
       const button = document.querySelector(".button-slider-next");
       button.classList.remove("is-disabled");
+      button.classList.add("already-removed");
     });
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

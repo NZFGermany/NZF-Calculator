@@ -121,6 +121,7 @@ const init = async () => {
      idealBank.on("change", (event: any) => {
         const button = document.querySelector('.button-slider-next') as HTMLAnchorElement;
         button.classList.remove('is-disabled');
+        button.classList.add("already-removed");
     });
    
 

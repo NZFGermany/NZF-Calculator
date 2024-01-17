@@ -36,6 +36,7 @@ const init = async () => {
 
     const idealStripeElement = document.querySelector<HTMLElement>('[data-element="ideal_stripe"]');
     if (!idealStripeElement) return;
+    
 
     const elements = stripe.elements();
 
@@ -117,6 +118,11 @@ const init = async () => {
       });
     });
 
+     idealBank.on("change", (event: any) => {
+        const button = document.querySelector('.button-slider-next') as HTMLAnchorElement;
+        button.classList.remove('is-disabled');
+    });
+   
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();

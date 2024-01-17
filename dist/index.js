@@ -106,6 +106,10 @@
         }
       });
     });
+    idealBank.on("change", (event) => {
+      const button = document.querySelector(".button-slider-next");
+      button.classList.remove("is-disabled");
+    });
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       e.stopPropagation();

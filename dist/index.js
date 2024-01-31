@@ -143,14 +143,14 @@
           payment_method: {
             ideal: idealBank
           },
-          return_url: `https://nationaal-zakat-fonds-rekenmachine.webflow.io/gegevens?paymentType=${paymentType}&paymentSort=ideal`
+          return_url: `https://nationaal-zakat-fonds-rekenmachine.webflow.io/betaling?paymentType=${paymentType}&paymentSort=ideal`
         });
       } else if (isCardPayment) {
         const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
           payment_method: {
             card
           },
-          return_url: `https://nationaal-zakat-fonds-rekenmachine.webflow.io/gegevens?paymentType=${paymentType}&paymentSort=card`
+          return_url: `https://nationaal-zakat-fonds-rekenmachine.webflow.io/betaling?paymentType=${paymentType}&paymentSort=card`
         });
         if (resultCardPayment.error) {
           const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || "De betaling met uw Creditcard is niet gelukt, probeer het opnieuw.";
@@ -170,13 +170,13 @@
           }
         } else {
           if (paymentType === "riba")
-            window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-riba`);
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
           else if (paymentType === "zakaat")
-            window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-zakaat`);
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
           else if (paymentType === "sadaka")
-            window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-sadaqa`);
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
           else
-            window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-sadaqa`);
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah);
         }
       }
     });

@@ -198,7 +198,21 @@
       const data = await response.json();
       return data;
     } catch (err) {
-      return null;
+          var existingFailedMessage = document.querySelector(".failed-message");
+          if (existingFailedMessage && existingFailedMessage.parentNode) {
+            existingFailedMessage.parentNode.removeChild(existingFailedMessage);
+          }
+          var failedMessage = document.createElement("div");
+          failedMessage.classList.add("failed-message");
+          failedMessage.textContent = "Er is een fout opgetreden. Vernieuw de pagina of controleer je verbinding als het probleem blijft.";
+          failedMessage.style.color = "red";
+          var referenceDiv = document.querySelector(".impact-tabs-menu.w-tab-menu");
+          if (referenceDiv && referenceDiv.parentNode) {
+            referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
+          } else {
+            console.error("Element or parent of .impact-tabs-menu.w-tab-menu not found");
+          }
+          return null;
     }
   };
   init();

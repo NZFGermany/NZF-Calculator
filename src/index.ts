@@ -24,7 +24,7 @@ const init = async () => {
                 return 'Er is een onbekende fout opgetreden.';
         }
     };
-    
+
     const stripe = window.Stripe?.(STRIPE_KEY);
     if (!stripe) return;
 
@@ -36,102 +36,102 @@ const init = async () => {
 
     const idealStripeElement = document.querySelector<HTMLElement>('[data-element="ideal_stripe"]');
     if (!idealStripeElement) return;
-    
+
 
     const elements = stripe.elements();
 
     // styling of elements check here properties: https://stripe.com/docs/js/appendix/style
     const idealBank = elements.create('idealBank', {
-    style: {
-        base: {
-        iconColor: '#000',
-        backgroundColor: '#17535B',
-        border: '1px',
-        borderColor: '#fff',
-        padding: '20px',
-        color: '#fff',
-        borderRadius: '4px',
-        fontWeight: '500',
-        fontFamily: "Ekster, sans-serif, Inter, Open Sans, Segoe UI, sans-serif",
-        fontSize: '16px',
-        fontSmoothing: 'antialiased',
-        ':-webkit-autofill': {
-            color: '#fff',
+        style: {
+            base: {
+                iconColor: '#000',
+                backgroundColor: '#17535B',
+                border: '1px',
+                borderColor: '#fff',
+                padding: '20px',
+                color: '#fff',
+                borderRadius: '4px',
+                fontWeight: '500',
+                fontFamily: "Ekster, sans-serif, Inter, Open Sans, Segoe UI, sans-serif",
+                fontSize: '16px',
+                fontSmoothing: 'antialiased',
+                ':-webkit-autofill': {
+                    color: '#fff',
+                },
+                '::placeholder': {
+                    color: '#fff',
+                },
+            },
+            invalid: {
+                iconColor: '#fff',
+                color: '#fff',
+            },
         },
-        '::placeholder': {
-            color: '#fff',
-        },
-        },
-        invalid: {
-        iconColor: '#fff',
-        color: '#fff',
-        },
-    },
     });
     idealBank.mount(idealStripeElement);
 
     const card = elements.create('card', {
-     style: {
-      base: {
-        backgroundColor: '#17535B',
-        border: '1px',
-        padding: '20px',
-        borderColor: '#fff',
-        color: "#fff",
-        iconColor: "#fff",
-        fontWeight: 500,
-        fontFamily: "Ekster, sans-serif, Inter, Open Sans, Segoe UI, sans-serif",
-        fontSize: "16px",
-        fontSmoothing: "antialiased",
-        "::placeholder": {
-          color: "#fff"
+        style: {
+            base: {
+                backgroundColor: '#17535B',
+                border: '1px',
+                padding: '20px',
+                borderColor: '#fff',
+                color: "#fff",
+                iconColor: "#fff",
+                fontWeight: 500,
+                fontFamily: "Ekster, sans-serif, Inter, Open Sans, Segoe UI, sans-serif",
+                fontSize: "16px",
+                fontSmoothing: "antialiased",
+                "::placeholder": {
+                    color: "#fff"
+                }
+            },
+            invalid: {
+                iconColor: '#fff',
+                color: "#E25950"
+            }
         }
-      },
-      invalid: {
-        iconColor: '#fff',
-        color: "#E25950"
-      }
-    }
-  });
+    });
     card.mount(ccStripeElement);
 
     // Get all tab elements
     var tabs = document.querySelectorAll('.w-tab-link');
 
     // Add click event listeners to each tab
-    tabs.forEach(function(tab) {
-    tab.addEventListener('click', function(event) {
-        // Prevent the default link behavior
-        event.preventDefault();
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function (event) {
+            // Prevent the default link behavior
+            event.preventDefault();
 
-        // Get the data-element attribute value
-        var dataElement = tab.getAttribute('data-element');
+            // Get the data-element attribute value
+            var dataElement = tab.getAttribute('data-element');
 
-        // Check if the clicked tab has a specific data-element value
-        if (dataElement === 'ideal_button') {
-            isIdealPayment = true;
-            isCardPayment = false;
-        } else if (dataElement === 'card_button') {
-            isCardPayment = true;
-            isIdealPayment = false;
-        }
-      });
+            // Check if the clicked tab has a specific data-element value
+            if (dataElement === 'ideal_button') {
+                isIdealPayment = true;
+                isCardPayment = false;
+            } else if (dataElement === 'card_button') {
+                isCardPayment = true;
+                isIdealPayment = false;
+            }
+        });
     });
 
-     idealBank.on("change", (event: any) => {
+    idealBank.on("change", (event: any) => {
         const button = document.querySelector('.button-slider-next') as HTMLAnchorElement;
         button.classList.remove('is-disabled');
         button.classList.add("already-removed");
     });
-   
+
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         const amountStripeElement = document.querySelector<HTMLInputElement>('[data-element="price_amount"]');
         let amountNumber = parseFloat(String(amountStripeElement?.value)) ?? 0;
-        
+
         if (!amountStripeElement || isNaN(amountNumber)) {
             return;
         }
@@ -147,63 +147,67 @@ const init = async () => {
         console.log(payment_intent)
         let paymentType;
 
-        if(payment_intent.isZakaatPayment && payment_intent.isRibaPayment){
+        if (payment_intent.isZakaatPayment && payment_intent.isRibaPayment) {
             paymentType = 'zakaat'
-        } else if(payment_intent.isRibaPayment && !payment_intent.isZakaatPayment) {
+        } else if (payment_intent.isRibaPayment && !payment_intent.isZakaatPayment) {
             paymentType = 'riba'
-        } else if(payment_intent.isSadakaPayment){
+        } else if (payment_intent.isSadakaPayment) {
             paymentType = 'sadaka'
-        }else{
+        } else {
             paymentType = 'zakaat'
         }
-        
-        if(payment_intent.isMonthly){
-           window.location.replace(payment_intent.paymentUrl)
-        } else if(isIdealPayment){
-            const resultIdealPayment = await stripe.confirmIdealPayment(payment_intent.clientSecret ,{
+
+        if (payment_intent.isMonthly) {
+            window.location.replace(payment_intent.paymentUrl)
+        } else if (isIdealPayment) {
+            const resultIdealPayment = await stripe.confirmIdealPayment(payment_intent.clientSecret, {
                 payment_method: {
                     ideal: idealBank
                 },
-                return_url: `https://nationaal-zakat-fonds-rekenmachine.webflow.io/gegevens?paymentType=${paymentType}&paymentSort=ideal`,
+                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=ideal`
             })
-        } else if(isCardPayment){
+        } else if (isCardPayment) {
             const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
-            payment_method: {
+                payment_method: {
                     card: card
                 },
-                return_url: `https://nationaal-zakat-fonds-rekenmachine.webflow.io/gegevens?paymentType=${paymentType}&paymentSort=card`,
+                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=card`
             })
             if (resultCardPayment.error) {
-                    // Vertaal de foutmelding
-                    const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || 'De betaling met uw Creditcard is niet gelukt, probeer het opnieuw.';
-                
-                    // Check and remove any existing failed message
-                    var existingFailedMessage = document.querySelector('.failed-message');
-                    if (existingFailedMessage && existingFailedMessage.parentNode) {
-                        existingFailedMessage.parentNode.removeChild(existingFailedMessage);
-                    }
-                
-                    // Create a new failed message div
-                    var failedMessage = document.createElement('div');
-                    failedMessage.classList.add('failed-message');
-                    failedMessage.textContent = translatedErrorMessage;
-                    failedMessage.style.color = 'red';
-                
-                    // Get the reference to the existing div where the new text should be inserted above
-                    var referenceDiv = document.querySelector('.impact-tabs-menu.w-tab-menu');
-                
-                    // Insert the new message
-                    if (referenceDiv && referenceDiv.parentNode) {
-                        referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
-                    } else {
-                        console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
-                    }
+                // Vertaal de foutmelding
+                const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || 'De betaling met uw Creditcard is niet gelukt, probeer het opnieuw.';
+
+                // Check and remove any existing failed message
+                var existingFailedMessage = document.querySelector('.failed-message');
+                if (existingFailedMessage && existingFailedMessage.parentNode) {
+                    existingFailedMessage.parentNode.removeChild(existingFailedMessage);
                 }
+
+                // Create a new failed message div
+                var failedMessage = document.createElement('div');
+                failedMessage.classList.add('failed-message');
+                failedMessage.textContent = translatedErrorMessage;
+                failedMessage.style.color = 'red';
+
+                // Get the reference to the existing div where the new text should be inserted above
+                var referenceDiv = document.querySelector('.impact-tabs-menu.w-tab-menu');
+
+                // Insert the new message
+                if (referenceDiv && referenceDiv.parentNode) {
+                    referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
+                } else {
+                    console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
+                }
+            }
             else {
-                if(paymentType === 'riba') window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-riba`);
-                else if(paymentType === 'zakaat') window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-zakaat`);
-                else if(paymentType === 'sadaka') window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-sadaqa`);
-                else window.location.replace(`https://nationaal-zakat-fonds-rekenmachine.webflow.io/bedankt-sadaqa`);
+                if (paymentType === "riba")
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
+                else if (paymentType === "zakaat")
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
+                else if (paymentType === "sadaka")
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+                else
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
             }
         }
     })
@@ -223,11 +227,25 @@ const createPaymentIntent = async (amount: number) => {
                 userslowlaneData
             })
         });
-        const data: { paymentIntent_id:string; clientSecret: string, isSadakaPayment: boolean, isRibaPayment: boolean, isZakaatPayment: boolean, paymentUrl: string, isMonthly: boolean } 
+        const data: { paymentIntent_id: string; clientSecret: string, isSadakaPayment: boolean, isRibaPayment: boolean, isZakaatPayment: boolean, paymentUrl: string, isMonthly: boolean }
             = await response.json();
 
         return data;
-    }catch(err) {
+    } catch (err) {
+        var existingFailedMessage = document.querySelector(".failed-message");
+        if (existingFailedMessage && existingFailedMessage.parentNode) {
+          existingFailedMessage.parentNode.removeChild(existingFailedMessage);
+        }
+        var failedMessage = document.createElement("div");
+        failedMessage.classList.add("failed-message");
+        failedMessage.textContent = "Er is een fout opgetreden. Vernieuw de pagina of controleer je verbinding als het probleem blijft.";
+        failedMessage.style.color = "red";
+        var referenceDiv = document.querySelector(".impact-tabs-menu.w-tab-menu");
+        if (referenceDiv && referenceDiv.parentNode) {
+          referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
+        } else {
+          console.error("Element or parent of .impact-tabs-menu.w-tab-menu not found");
+        }
         return null;
     }
 }

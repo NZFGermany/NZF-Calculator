@@ -126,15 +126,19 @@
       await elements.submit();
       const isSadakaPayment = payment_intent.isSadakaPayment ? payment_intent.isSadakaPayment : false;
       console.log(payment_intent);
+      let userData = sessionStorage.getItem("userslowlane");
+      let userdataclean = userData ? JSON.parse(userData) : {};
+      let zakatBedrag = parseFloat(userdataclean.zakatPay) || 0;
+      let ribaBedrag = parseFloat(userdataclean.ribaValue) || 0;
+      let sadaqahBedrag = parseFloat(userdataclean.sadakaValue) || 0;
+      let hoogsteBedrag = Math.max(zakatBedrag, ribaBedrag, sadaqahBedrag);
       let paymentType;
-      if (payment_intent.isZakaatPayment && payment_intent.isRibaPayment) {
-        paymentType = "zakaat";
-      } else if (payment_intent.isRibaPayment && !payment_intent.isZakaatPayment) {
+      if (hoogsteBedrag === zakatBedrag) {
+        paymentType = "zakat";
+      } else if (hoogsteBedrag === ribaBedrag) {
         paymentType = "riba";
-      } else if (payment_intent.isSadakaPayment) {
-        paymentType = "sadaka";
       } else {
-        paymentType = "zakaat";
+        paymentType = "sadaka";
       }
       if (payment_intent.isMonthly) {
         window.location.replace(payment_intent.paymentUrl);
@@ -171,7 +175,7 @@
         } else {
           if (paymentType === "riba")
             window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
-          else if (paymentType === "zakaat")
+          else if (paymentType === "zakat")
             window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
           else if (paymentType === "sadaka")
             window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
@@ -183,7 +187,38 @@
   };
   var createPaymentIntent = async (amount) => {
     try {
-      let userslowlaneData = sessionStorage.getItem("userslowlane");
+      let userslowlaneRawData = sessionStorage.getItem("userslowlane");
+      let userslowlaneData = userslowlaneRawData ? JSON.parse(userslowlaneRawData) : {};
+      const keyMappings = {
+        zakatPay: "zakatBedrag",
+        sadakaValue: "sadaqahBedrag",
+        ribaValue: "ribaBedrag",
+        total: "totaalBedrag",
+        anoniem: "anoniem",
+        transactiekosten: "transactiekosten",
+        datum: "datum",
+        fastlane: "fastlane",
+        userType: "userType",
+        userslowlane: "userslowlane",
+        educatiefonds: "educatiefonds",
+        noodfonds: "noodfonds",
+        woonfonds: "woonfonds",
+        maandelijks: "maandelijks",
+        voornaam: "voornaam",
+        achternaam: "achternaam",
+        email: "email"
+      };
+      if (userslowlaneData.anoniem) {
+        delete keyMappings.voornaam;
+        delete keyMappings.achternaam;
+        delete keyMappings.email;
+      }
+      const filteredAndRenamedData = Object.keys(userslowlaneData).filter((key) => Object.keys(keyMappings).includes(key)).reduce((obj, key) => {
+        const newKey = keyMappings[key] || key;
+        obj[newKey] = userslowlaneData[key];
+        return obj;
+      }, {});
+      console.log("userslowlaneData to be sent:", filteredAndRenamedData);
       const response = await fetch("https://cloudflare-work.jabirtisou8072.workers.dev/create-payment", {
         method: "POST",
         headers: {
@@ -192,12 +227,16 @@
         body: JSON.stringify({
           amount,
           currency: "eur",
-          userslowlaneData
+          userslowlaneData: JSON.stringify(filteredAndRenamedData)
         })
       });
       const data = await response.json();
       return data;
     } catch (err) {
+      var buttonText = document.querySelector(".button-text");
+      if (buttonText instanceof HTMLElement) {
+        buttonText.innerText = "Naar betaling";
+      }
       var existingFailedMessage = document.querySelector(".failed-message");
       if (existingFailedMessage && existingFailedMessage.parentNode) {
         existingFailedMessage.parentNode.removeChild(existingFailedMessage);

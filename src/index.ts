@@ -145,18 +145,25 @@ const init = async () => {
 
         const isSadakaPayment = payment_intent.isSadakaPayment ? payment_intent.isSadakaPayment : false;
         console.log(payment_intent)
+
+        let userData = sessionStorage.getItem("userslowlane");
+        let userdataclean = userData ? JSON.parse(userData) : {};
+
+        let zakatBedrag = parseFloat(userdataclean.zakatPay) || 0;
+        let ribaBedrag = parseFloat(userdataclean.ribaValue) || 0;
+        let sadaqahBedrag = parseFloat(userdataclean.sadakaValue) || 0;
+        let hoogsteBedrag = Math.max(zakatBedrag, ribaBedrag, sadaqahBedrag);
         let paymentType;
 
-        if (payment_intent.isZakaatPayment && payment_intent.isRibaPayment) {
-            paymentType = 'zakaat'
-        } else if (payment_intent.isRibaPayment && !payment_intent.isZakaatPayment) {
-            paymentType = 'riba'
-        } else if (payment_intent.isSadakaPayment) {
-            paymentType = 'sadaka'
+        if (hoogsteBedrag === zakatBedrag) {
+            paymentType = 'zakat';
+        } else if (hoogsteBedrag === ribaBedrag) {
+            paymentType = 'riba';
         } else {
-            paymentType = 'zakaat'
+            paymentType = 'sadaka';
         }
 
+        
         if (payment_intent.isMonthly) {
             window.location.replace(payment_intent.paymentUrl)
         } else if (isIdealPayment) {
@@ -196,13 +203,13 @@ const init = async () => {
                 if (referenceDiv && referenceDiv.parentNode) {
                     referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
                 } else {
-                    console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
+                  console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
                 }
             }
             else {
                 if (paymentType === "riba")
                     window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
-                else if (paymentType === "zakaat")
+                else if (paymentType === "zakat")
                     window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
                 else if (paymentType === "sadaka")
                     window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
@@ -213,9 +220,49 @@ const init = async () => {
     })
 };
 
-const createPaymentIntent = async (amount: number) => {
+const createPaymentIntent = async (amount) => {
     try {
-        let userslowlaneData = sessionStorage.getItem("userslowlane");
+        let userslowlaneRawData = sessionStorage.getItem("userslowlane");
+        let userslowlaneData = userslowlaneRawData ? JSON.parse(userslowlaneRawData) : {};
+
+        // Definieer de sleutels die je wilt hernoemen
+        const keyMappings = {
+            zakatPay: "zakatBedrag",
+            sadakaValue: "sadaqahBedrag",
+            ribaValue: "ribaBedrag",
+            total: "totaalBedrag",
+            anoniem: "anoniem",
+            transactiekosten: "transactiekosten",
+            datum: "datum",
+            fastlane: "fastlane",
+            userType: "userType",
+            userslowlane: "userslowlane",
+            educatiefonds: "educatiefonds",
+            noodfonds: "noodfonds",
+            woonfonds: "woonfonds",
+            maandelijks: "maandelijks",
+            voornaam: "voornaam",
+            achternaam: "achternaam",
+            email: "email"
+        };
+
+        if(userslowlaneData.anoniem) {
+            delete keyMappings.voornaam;
+            delete keyMappings.achternaam;
+            delete keyMappings.email;
+        }
+        
+        // Filter en hernoem de data gebaseerd op de mappings
+        const filteredAndRenamedData = Object.keys(userslowlaneData)
+            .filter(key => Object.keys(keyMappings).includes(key))
+            .reduce((obj, key) => {
+                const newKey = keyMappings[key] || key; // Gebruik de nieuwe sleutelnaam als deze bestaat, anders de originele sleutel
+                obj[newKey] = userslowlaneData[key];
+                return obj;
+            }, {});
+
+        console.log("userslowlaneData to be sent:", filteredAndRenamedData);
+
         const response = await fetch('https://cloudflare-work.jabirtisou8072.workers.dev/create-payment', {
             method: 'POST',
             headers: {
@@ -224,14 +271,18 @@ const createPaymentIntent = async (amount: number) => {
             body: JSON.stringify({
                 amount: amount,
                 currency: 'eur',
-                userslowlaneData
+                userslowlaneData: JSON.stringify(filteredAndRenamedData) 
             })
         });
-        const data: { paymentIntent_id: string; clientSecret: string, isSadakaPayment: boolean, isRibaPayment: boolean, isZakaatPayment: boolean, paymentUrl: string, isMonthly: boolean }
-            = await response.json();
 
+        const data = await response.json();
         return data;
     } catch (err) {
+        var buttonText = document.querySelector('.button-text');
+        if (buttonText instanceof HTMLElement) {
+            buttonText.innerText = "Naar betaling";
+        }
+
         var existingFailedMessage = document.querySelector(".failed-message");
         if (existingFailedMessage && existingFailedMessage.parentNode) {
           existingFailedMessage.parentNode.removeChild(existingFailedMessage);
@@ -249,5 +300,6 @@ const createPaymentIntent = async (amount: number) => {
         return null;
     }
 }
+
 
 init();

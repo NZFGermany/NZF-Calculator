@@ -167,6 +167,10 @@
           failedMessage.textContent = translatedErrorMessage;
           failedMessage.style.color = "red";
           var referenceDiv = document.querySelector(".impact-tabs-menu.w-tab-menu");
+          var buttonText = document.querySelector(".button-text");
+          if (buttonText instanceof HTMLElement) {
+            buttonText.innerText = "Naar betaling";
+          }
           if (referenceDiv && referenceDiv.parentNode) {
             referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
           } else {

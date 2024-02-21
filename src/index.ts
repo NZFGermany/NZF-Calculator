@@ -199,6 +199,11 @@ const init = async () => {
                 // Get the reference to the existing div where the new text should be inserted above
                 var referenceDiv = document.querySelector('.impact-tabs-menu.w-tab-menu');
 
+                var buttonText = document.querySelector(".button-text");
+                if (buttonText instanceof HTMLElement) {
+                  buttonText.innerText = "Naar betaling";
+                }
+
                 // Insert the new message
                 if (referenceDiv && referenceDiv.parentNode) {
                     referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);

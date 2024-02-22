@@ -148,6 +148,9 @@ const init = async () => {
 
         let userData = sessionStorage.getItem("userslowlane");
         let userdataclean = userData ? JSON.parse(userData) : {};
+        
+        userdataclean.paymentIntent_id = payment_intent.paymentIntent_id;
+        sessionStorage.setItem("userslowlane", JSON.stringify(userdataclean));
 
         let zakatBedrag = parseFloat(userdataclean.zakatPay) || 0;
         let ribaBedrag = parseFloat(userdataclean.ribaValue) || 0;

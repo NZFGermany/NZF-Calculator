@@ -130,6 +130,13 @@
       let userdataclean = userData ? JSON.parse(userData) : {};
       userdataclean.paymentIntent_id = payment_intent.paymentIntent_id;
       sessionStorage.setItem("userslowlane", JSON.stringify(userdataclean));
+      const currentTime = /* @__PURE__ */ new Date();
+      const userObject = {
+        ...userdataclean,
+        timestamp: currentTime.getTime(),
+        readableTime: currentTime.toString()
+      };
+      localStorage.setItem("user", JSON.stringify(userObject));
       let zakatBedrag = parseFloat(userdataclean.zakatPay) || 0;
       let ribaBedrag = parseFloat(userdataclean.ribaValue) || 0;
       let sadaqahBedrag = parseFloat(userdataclean.sadakaValue) || 0;

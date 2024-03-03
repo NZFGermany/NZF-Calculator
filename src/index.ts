@@ -151,7 +151,7 @@ const init = async () => {
         
         userdataclean.paymentIntent_id = payment_intent.paymentIntent_id;
         sessionStorage.setItem("userslowlane", JSON.stringify(userdataclean));
-        
+        localStorage.removeItem("user");
         const currentTime = new Date();
         const userObject = {
             ...userdataclean,

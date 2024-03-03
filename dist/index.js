@@ -130,6 +130,7 @@
       let userdataclean = userData ? JSON.parse(userData) : {};
       userdataclean.paymentIntent_id = payment_intent.paymentIntent_id;
       sessionStorage.setItem("userslowlane", JSON.stringify(userdataclean));
+      localStorage.removeItem("user");
       const currentTime = /* @__PURE__ */ new Date();
       const userObject = {
         ...userdataclean,

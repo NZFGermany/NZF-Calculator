@@ -279,7 +279,7 @@ const createPaymentIntent = async (amount) => {
 
         console.log("userslowlaneData to be sent:", filteredAndRenamedData);
 
-        const response = await fetch('https://cloudflare-work.jabirtisou8072.workers.dev/create-payment', {
+        const response = await fetch('https://nzf-stripe.accounts-545.workers.dev/create-payment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -40,14 +40,16 @@ const init = async () => {
 
     const elements = stripe.elements();
 
+
     // styling of elements check here properties: https://stripe.com/docs/js/appendix/style
-    const idealBank = elements.create('idealBank', {
+    const sepaDebit = elements.create('iban', {
+        supportedCountries: ['SEPA'],
+        placeholderCountry: 'DE',
         style: {
             base: {
                 iconColor: '#000',
                 backgroundColor: '#17535B',
-                border: '1px',
-                borderColor: '#fff',
+                border: '1px solid #fff',
                 padding: '20px',
                 color: '#fff',
                 borderRadius: '4px',
@@ -68,7 +70,9 @@ const init = async () => {
             },
         },
     });
-    idealBank.mount(idealStripeElement);
+    
+    // Mount the SEPA IBAN element to the page
+    sepaDebit.mount(idealStripeElement);
 
     const card = elements.create('card', {
         style: {
@@ -118,11 +122,7 @@ const init = async () => {
         });
     });
 
-    idealBank.on("change", (event: any) => {
-        const button = document.querySelector('.button-slider-next') as HTMLAnchorElement;
-        button.classList.remove('is-disabled');
-        button.classList.add("already-removed");
-    });
+
 
 
     form.addEventListener('submit', async (e) => {
@@ -178,12 +178,31 @@ const init = async () => {
         if (payment_intent.isMonthly) {
             window.location.replace(payment_intent.paymentUrl)
         } else if (isIdealPayment) {
-            const resultIdealPayment = await stripe.confirmIdealPayment(payment_intent.clientSecret, {
+            const resultSepaPayment = await stripe.confirmSepaDebitPayment(payment_intent.clientSecret, {
                 payment_method: {
-                    ideal: idealBank
+                    sepa_debit: sepaDebit, // Use sepa_debit instead of ideal
+                    billing_details: {
+                        name: userdataclean.voornaam + " " + userdataclean.achternaam || 'Unknown Name', 
+                        email: userdataclean.email || 'unknown@example.com',
+                    },
                 },
-                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=ideal`
-            })
+                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa` // Change paymentSort to 'sepa'
+            });
+            // Check the result to see if the status is 'processing'
+            if (resultSepaPayment.error) {
+                // Handle the error case
+                //console.error(resultSepaPayment.error.message);
+                // Optionally show the error to the user
+            } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === 'processing') {
+                // The payment is processing, redirect the user
+                window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;  // Replace with your desired URL
+            } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === 'succeeded') {
+                // The payment succeeded immediately (rare for SEPA, but still possible)
+                window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;  // Replace with your success URL
+            } else {
+                // Handle other statuses like 'requires_action', 'requires_payment_method', etc.
+                //console.log('Payment status:', resultSepaPayment.paymentIntent.status);
+            }
         } else if (isCardPayment) {
             const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
                 payment_method: {
@@ -240,7 +259,8 @@ const createPaymentIntent = async (amount) => {
     try {
         let userslowlaneRawData = sessionStorage.getItem("userslowlane");
         let userslowlaneData = userslowlaneRawData ? JSON.parse(userslowlaneRawData) : {};
-
+        console.log(userslowlaneData)
+        
         // Definieer de sleutels die je wilt hernoemen
         const keyMappings = {
             zakatPay: "zakatBedrag",
@@ -279,7 +299,7 @@ const createPaymentIntent = async (amount) => {
 
         console.log("userslowlaneData to be sent:", filteredAndRenamedData);
 
-        const response = await fetch('https://nzf-stripe.accounts-545.workers.dev/create-payment', {
+        const response = await fetch('https://nzf-stripe.toufik.workers.dev/create-payment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -27,7 +27,7 @@
           return "Er is een onbekende fout opgetreden.";
       }
     };
-    const stripe = window.Stripe?.("pk_live_xFuwqUNr7pWlJVb9CWsLwt9Y00g7rBDjxH");
+    const stripe = window.Stripe?.("pk_live_51MUeTFF12CvoVfz6wzmgcT8vrtT83Gx34XXlvFm9o9zLAvx878EairjzbvUsy58PqLFBlYOvwc9o5qIhKtopBw3i00EZrJmX63");
     if (!stripe)
       return;
     const form = document.querySelector('[data-element="payment_form"]');
@@ -40,13 +40,14 @@
     if (!idealStripeElement)
       return;
     const elements = stripe.elements();
-    const idealBank = elements.create("idealBank", {
+    const sepaDebit = elements.create("iban", {
+      supportedCountries: ["SEPA"],
+      placeholderCountry: "DE",
       style: {
         base: {
           iconColor: "#000",
           backgroundColor: "#17535B",
-          border: "1px",
-          borderColor: "#fff",
+          border: "1px solid #fff",
           padding: "20px",
           color: "#fff",
           borderRadius: "4px",
@@ -67,7 +68,7 @@
         }
       }
     });
-    idealBank.mount(idealStripeElement);
+    sepaDebit.mount(idealStripeElement);
     const card = elements.create("card", {
       style: {
         base: {
@@ -105,11 +106,6 @@
           isIdealPayment = false;
         }
       });
-    });
-    idealBank.on("change", (event) => {
-      const button = document.querySelector(".button-slider-next");
-      button.classList.remove("is-disabled");
-      button.classList.add("already-removed");
     });
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -153,12 +149,25 @@
       if (payment_intent.isMonthly) {
         window.location.replace(payment_intent.paymentUrl);
       } else if (isIdealPayment) {
-        const resultIdealPayment = await stripe.confirmIdealPayment(payment_intent.clientSecret, {
+        const resultSepaPayment = await stripe.confirmSepaDebitPayment(payment_intent.clientSecret, {
           payment_method: {
-            ideal: idealBank
+            sepa_debit: sepaDebit,
+            // Use sepa_debit instead of ideal
+            billing_details: {
+              name: userdataclean.voornaam + " " + userdataclean.achternaam || "Unknown Name",
+              email: userdataclean.email || "unknown@example.com"
+            }
           },
-          return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=ideal`
+          return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`
+          // Change paymentSort to 'sepa'
         });
+        if (resultSepaPayment.error) {
+        } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === "processing") {
+          window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;
+        } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === "succeeded") {
+          window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;
+        } else {
+        }
       } else if (isCardPayment) {
         const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
           payment_method: {
@@ -203,6 +212,7 @@
     try {
       let userslowlaneRawData = sessionStorage.getItem("userslowlane");
       let userslowlaneData = userslowlaneRawData ? JSON.parse(userslowlaneRawData) : {};
+      console.log(userslowlaneData);
       const keyMappings = {
         zakatPay: "zakatBedrag",
         sadakaValue: "sadaqahBedrag",
@@ -233,7 +243,7 @@
         return obj;
       }, {});
       console.log("userslowlaneData to be sent:", filteredAndRenamedData);
-      const response = await fetch("https://nzf-stripe.accounts-545.workers.dev/create-payment", {
+      const response = await fetch("https://nzf-stripe.toufik.workers.dev/create-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

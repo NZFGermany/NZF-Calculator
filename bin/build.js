@@ -27,8 +27,8 @@ const context = await esbuild.context({
     SERVE_ORIGIN: JSON.stringify(SERVE_ORIGIN),
     STRIPE_KEY: JSON.stringify(
       PRODUCTION
-        ? 'pk_live_xFuwqUNr7pWlJVb9CWsLwt9Y00g7rBDjxH'
-        :  'pk_live_xFuwqUNr7pWlJVb9CWsLwt9Y00g7rBDjxH'
+        ? 'pk_live_51MUeTFF12CvoVfz6wzmgcT8vrtT83Gx34XXlvFm9o9zLAvx878EairjzbvUsy58PqLFBlYOvwc9o5qIhKtopBw3i00EZrJmX63'
+        :  'pk_live_51MUeTFF12CvoVfz6wzmgcT8vrtT83Gx34XXlvFm9o9zLAvx878EairjzbvUsy58PqLFBlYOvwc9o5qIhKtopBw3i00EZrJmX63'
     ),
   },
 });

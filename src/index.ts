@@ -5,25 +5,25 @@ const init = async () => {
     let isCardPayment = false;
 
     const translateStripeError = (error) => {
-        switch (error) {
-            case 'Your card has been declined.':
-                return 'Uw kaart is geweigerd.';
-            case 'Your card has insufficient funds.':
-                return 'Uw kaart heeft onvoldoende saldo.';
-            case 'Your card has expired.':
-                return 'Uw kaart is verlopen.';
-            case 'Your card\'s security code is incorrect.':
-                return 'De beveiligingscode van uw kaart is onjuist.';
-            case 'An error occurred while processing your card. Try again in a little bit.':
-                return 'Er is een fout opgetreden bij het verwerken van uw kaart. Probeer het over een poosje opnieuw.';
-            case 'Your card number is invalid.':
-                return 'Uw kaartnummer is ongeldig.';
-            case 'Your card was declined for making repeated attempts too frequently.':
-                return 'Uw kaart is geweigerd vanwege het te vaak herhalen van pogingen.';
-            default:
-                return 'Er is een onbekende fout opgetreden.';
-        }
-    };
+    switch (error) {
+        case 'Your card has been declined.':
+            return 'Ihre Karte wurde abgelehnt.';
+        case 'Your card has insufficient funds.':
+            return 'Ihre Karte hat unzureichende Mittel.';
+        case 'Your card has expired.':
+            return 'Ihre Karte ist abgelaufen.';
+        case 'Your card\'s security code is incorrect.':
+            return 'Der Sicherheitscode Ihrer Karte ist falsch.';
+        case 'An error occurred while processing your card. Try again in a little bit.':
+            return 'Beim Verarbeiten Ihrer Karte ist ein Fehler aufgetreten. Versuchen Sie es in Kürze erneut.';
+        case 'Your card number is invalid.':
+            return 'Ihre Kartennummer ist ungültig.';
+        case 'Your card was declined for making repeated attempts too frequently.':
+            return 'Ihre Karte wurde abgelehnt, weil zu oft wiederholte Versuche gemacht wurden.';
+        default:
+            return 'Ein unbekannter Fehler ist aufgetreten.';
+    }
+};
 
     const stripe = window.Stripe?.(STRIPE_KEY);
     if (!stripe) return;
@@ -188,31 +188,10 @@ const init = async () => {
                 },
                 return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa` // Change paymentSort to 'sepa'
             });
-            // Check the result to see if the status is 'processing'
+
             if (resultSepaPayment.error) {
-                // Handle the error case
-                //console.error(resultSepaPayment.error.message);
-                // Optionally show the error to the user
-            } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === 'processing') {
-                // The payment is processing, redirect the user
-                window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;  // Replace with your desired URL
-            } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === 'succeeded') {
-                // The payment succeeded immediately (rare for SEPA, but still possible)
-                window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;  // Replace with your success URL
-            } else {
-                // Handle other statuses like 'requires_action', 'requires_payment_method', etc.
-                //console.log('Payment status:', resultSepaPayment.paymentIntent.status);
-            }
-        } else if (isCardPayment) {
-            const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
-                payment_method: {
-                    card: card
-                },
-                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=card`
-            })
-            if (resultCardPayment.error) {
                 // Vertaal de foutmelding
-                const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || 'De betaling met uw Creditcard is niet gelukt, probeer het opnieuw.';
+                const translatedErrorMessage = translateStripeError(resultSepaPayment.error.message) || 'Die Zahlung mit Ihrer SEPA-Bank ist fehlgeschlagen, bitte versuchen Sie es erneut.';
 
                 // Check and remove any existing failed message
                 var existingFailedMessage = document.querySelector('.failed-message');
@@ -231,7 +210,55 @@ const init = async () => {
 
                 var buttonText = document.querySelector(".button-text");
                 if (buttonText instanceof HTMLElement) {
-                  buttonText.innerText = "Naar betaling";
+                  buttonText.innerText = "Zur Zahlung";
+                }
+
+                // Insert the new message
+                if (referenceDiv && referenceDiv.parentNode) {
+                    referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
+                } else {
+                  console.error('Element or parent of .impact-tabs-menu.w-tab-menu not found');
+                }
+            }
+            else {
+                if (paymentType === "riba")
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
+                else if (paymentType === "zakat")
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
+                else if (paymentType === "sadaka")
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+                else
+                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+            }
+        } else if (isCardPayment) {
+            const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
+                payment_method: {
+                    card: card
+                },
+                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=card`
+            })
+            if (resultCardPayment.error) {
+                // Vertaal de foutmelding
+                const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || 'Die Zahlung mit Ihrer Kreditkarte ist fehlgeschlagen, bitte versuchen Sie es erneut.';
+
+                // Check and remove any existing failed message
+                var existingFailedMessage = document.querySelector('.failed-message');
+                if (existingFailedMessage && existingFailedMessage.parentNode) {
+                    existingFailedMessage.parentNode.removeChild(existingFailedMessage);
+                }
+
+                // Create a new failed message div
+                var failedMessage = document.createElement('div');
+                failedMessage.classList.add('failed-message');
+                failedMessage.textContent = translatedErrorMessage;
+                failedMessage.style.color = 'red';
+
+                // Get the reference to the existing div where the new text should be inserted above
+                var referenceDiv = document.querySelector('.impact-tabs-menu.w-tab-menu');
+
+                var buttonText = document.querySelector(".button-text");
+                if (buttonText instanceof HTMLElement) {
+                  buttonText.innerText = "Zur Zahlung";
                 }
 
                 // Insert the new message
@@ -316,7 +343,7 @@ const createPaymentIntent = async (amount) => {
     } catch (err) {
         var buttonText = document.querySelector('.button-text');
         if (buttonText instanceof HTMLElement) {
-            buttonText.innerText = "Naar betaling";
+            buttonText.innerText = "Zur Zahlung";
         }
 
         var existingFailedMessage = document.querySelector(".failed-message");

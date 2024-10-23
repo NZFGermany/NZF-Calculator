@@ -10,21 +10,21 @@
     const translateStripeError = (error) => {
       switch (error) {
         case "Your card has been declined.":
-          return "Uw kaart is geweigerd.";
+          return "Ihre Karte wurde abgelehnt.";
         case "Your card has insufficient funds.":
-          return "Uw kaart heeft onvoldoende saldo.";
+          return "Ihre Karte hat unzureichende Mittel.";
         case "Your card has expired.":
-          return "Uw kaart is verlopen.";
+          return "Ihre Karte ist abgelaufen.";
         case "Your card's security code is incorrect.":
-          return "De beveiligingscode van uw kaart is onjuist.";
+          return "Der Sicherheitscode Ihrer Karte ist falsch.";
         case "An error occurred while processing your card. Try again in a little bit.":
-          return "Er is een fout opgetreden bij het verwerken van uw kaart. Probeer het over een poosje opnieuw.";
+          return "Beim Verarbeiten Ihrer Karte ist ein Fehler aufgetreten. Versuchen Sie es in K\xFCrze erneut.";
         case "Your card number is invalid.":
-          return "Uw kaartnummer is ongeldig.";
+          return "Ihre Kartennummer ist ung\xFCltig.";
         case "Your card was declined for making repeated attempts too frequently.":
-          return "Uw kaart is geweigerd vanwege het te vaak herhalen van pogingen.";
+          return "Ihre Karte wurde abgelehnt, weil zu oft wiederholte Versuche gemacht wurden.";
         default:
-          return "Er is een onbekende fout opgetreden.";
+          return "Ein unbekannter Fehler ist aufgetreten.";
       }
     };
     const stripe = window.Stripe?.("pk_live_51MUeTFF12CvoVfz6wzmgcT8vrtT83Gx34XXlvFm9o9zLAvx878EairjzbvUsy58PqLFBlYOvwc9o5qIhKtopBw3i00EZrJmX63");
@@ -162,21 +162,7 @@
           // Change paymentSort to 'sepa'
         });
         if (resultSepaPayment.error) {
-        } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === "processing") {
-          window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;
-        } else if (resultSepaPayment.paymentIntent && resultSepaPayment.paymentIntent.status === "succeeded") {
-          window.location.href = `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa`;
-        } else {
-        }
-      } else if (isCardPayment) {
-        const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
-          payment_method: {
-            card
-          },
-          return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=card`
-        });
-        if (resultCardPayment.error) {
-          const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || "De betaling met uw Creditcard is niet gelukt, probeer het opnieuw.";
+          const translatedErrorMessage = translateStripeError(resultSepaPayment.error.message) || "Die Zahlung mit Ihrer SEPA-Bank ist fehlgeschlagen, bitte versuchen Sie es erneut.";
           var existingFailedMessage = document.querySelector(".failed-message");
           if (existingFailedMessage && existingFailedMessage.parentNode) {
             existingFailedMessage.parentNode.removeChild(existingFailedMessage);
@@ -188,7 +174,44 @@
           var referenceDiv = document.querySelector(".impact-tabs-menu.w-tab-menu");
           var buttonText = document.querySelector(".button-text");
           if (buttonText instanceof HTMLElement) {
-            buttonText.innerText = "Naar betaling";
+            buttonText.innerText = "Zur Zahlung";
+          }
+          if (referenceDiv && referenceDiv.parentNode) {
+            referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
+          } else {
+            console.error("Element or parent of .impact-tabs-menu.w-tab-menu not found");
+          }
+        } else {
+          if (paymentType === "riba")
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
+          else if (paymentType === "zakat")
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
+          else if (paymentType === "sadaka")
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+          else
+            window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+        }
+      } else if (isCardPayment) {
+        const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
+          payment_method: {
+            card
+          },
+          return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=card`
+        });
+        if (resultCardPayment.error) {
+          const translatedErrorMessage = translateStripeError(resultCardPayment.error.message) || "Die Zahlung mit Ihrer Kreditkarte ist fehlgeschlagen, bitte versuchen Sie es erneut.";
+          var existingFailedMessage = document.querySelector(".failed-message");
+          if (existingFailedMessage && existingFailedMessage.parentNode) {
+            existingFailedMessage.parentNode.removeChild(existingFailedMessage);
+          }
+          var failedMessage = document.createElement("div");
+          failedMessage.classList.add("failed-message");
+          failedMessage.textContent = translatedErrorMessage;
+          failedMessage.style.color = "red";
+          var referenceDiv = document.querySelector(".impact-tabs-menu.w-tab-menu");
+          var buttonText = document.querySelector(".button-text");
+          if (buttonText instanceof HTMLElement) {
+            buttonText.innerText = "Zur Zahlung";
           }
           if (referenceDiv && referenceDiv.parentNode) {
             referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
@@ -259,7 +282,7 @@
     } catch (err) {
       var buttonText = document.querySelector(".button-text");
       if (buttonText instanceof HTMLElement) {
-        buttonText.innerText = "Naar betaling";
+        buttonText.innerText = "Zur Zahlung";
       }
       var existingFailedMessage = document.querySelector(".failed-message");
       if (existingFailedMessage && existingFailedMessage.parentNode) {

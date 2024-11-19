@@ -290,24 +290,24 @@ const createPaymentIntent = async (amount) => {
         
         // Definieer de sleutels die je wilt hernoemen
         const keyMappings = {
-            zakatPay: "zakatBedrag",
-            sadakaValue: "sadaqahBedrag",
-            ribaValue: "ribaBedrag",
-            total: "totaalBedrag",
-            anoniem: "anoniem",
-            transactiekosten: "transactiekosten",
-            datum: "datum",
-            fastlane: "fastlane",
-            userType: "userType",
-            userslowlane: "userslowlane",
-            educatiefonds: "educatiefonds",
-            noodfonds: "noodfonds",
-            woonfonds: "woonfonds",
-            maandelijks: "maandelijks",
-            voornaam: "voornaam",
-            achternaam: "achternaam",
-            email: "email"
-        };
+            zakatPay: "Zakat betrag",
+            sadakaValue: "Sadaqah betrag",
+            ribaValue: "Zinsbetrag",
+            total: "Gesamtbetrag",
+            anoniem: "Anonym",
+            transactiekosten: "Transaktionkosten",
+            datum: "Zahlungsdatum",
+            fastlane: "Fastlane Benutzer",
+            userType: "Type Zakat Zahler",
+            userslowlane: "Slowlane Benutzer",
+            educatiefonds: "Bildungsfonds",
+            noodfonds: "Notfallfonds",
+            woonfonds: "Wohnfonds",
+            maandelijks: "Monatlich",
+            voornaam: "Vorname",
+            achternaam: "Nachname",
+            email: "Email"
+          };
 
         if(userslowlaneData.anoniem) {
             delete keyMappings.voornaam;

@@ -237,9 +237,9 @@
       let userslowlaneData = userslowlaneRawData ? JSON.parse(userslowlaneRawData) : {};
       console.log(userslowlaneData);
       const keyMappings = {
-        zakatPay: "Zakat betrag",
-        sadakaValue: "Sadaqah betrag",
-        ribaValue: "Zinsbetrag",
+        zakatPay: "ZakatBetrag",
+        sadakaValue: "SadaqahBetrag",
+        ribaValue: "ZinsBetrag",
         total: "Gesamtbetrag",
         anoniem: "Anonym",
         transactiekosten: "Transaktionkosten",

@@ -290,9 +290,9 @@ const createPaymentIntent = async (amount) => {
         
         // Definieer de sleutels die je wilt hernoemen
         const keyMappings = {
-            zakatPay: "Zakat betrag",
-            sadakaValue: "Sadaqah betrag",
-            ribaValue: "Zinsbetrag",
+            zakatPay: "ZakatBetrag",
+            sadakaValue: "SadaqahBetrag",
+            ribaValue: "ZinsBetrag",
             total: "Gesamtbetrag",
             anoniem: "Anonym",
             transactiekosten: "Transaktionkosten",

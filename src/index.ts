@@ -180,13 +180,18 @@ const init = async () => {
         } else if (isIdealPayment) {
             const resultSepaPayment = await stripe.confirmSepaDebitPayment(payment_intent.clientSecret, {
                 payment_method: {
-                    sepa_debit: sepaDebit, // Use sepa_debit instead of ideal
+                    sepa_debit: sepaDebit, 
                     billing_details: {
                         name: userdataclean.voornaam + " " + userdataclean.achternaam || 'Unknown Name', 
                         email: userdataclean.email || 'unknown@example.com',
+                        address: {
+                            line1: userdataclean.straat || 'Unknown Street',
+                            postal_code: userdataclean.postcode || '00000',
+                            city: userdataclean.stad || 'Unknown City',
+                        },
                     },
                 },
-                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=sepa` // Change paymentSort to 'sepa'
+                return_url: `https://secure.zakat-deutschland.de/zahlung?paymentType=${paymentType}&paymentSort=sepa` // Change paymentSort to 'sepa'
             });
 
             if (resultSepaPayment.error) {
@@ -222,20 +227,20 @@ const init = async () => {
             }
             else {
                 if (paymentType === "riba")
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-riba`);
                 else if (paymentType === "zakat")
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-zakat`);
                 else if (paymentType === "sadaka")
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-sadaqah`);
                 else
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-sadaqah`);
             }
         } else if (isCardPayment) {
             const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
                 payment_method: {
-                    card: card
+                    card: card,
                 },
-                return_url: `https://calculator.nationaalzakatfonds.nl/betaling?paymentType=${paymentType}&paymentSort=card`
+                return_url: `https://secure.zakat-deutschland.de/zahlung?paymentType=${paymentType}&paymentSort=card`
             })
             if (resultCardPayment.error) {
                 // Vertaal de foutmelding
@@ -270,13 +275,13 @@ const init = async () => {
             }
             else {
                 if (paymentType === "riba")
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-riba`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-riba`);
                 else if (paymentType === "zakat")
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-zakat`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-zakat`);
                 else if (paymentType === "sadaka")
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-sadaqah`);
                 else
-                    window.location.replace(`https://calculator.nationaalzakatfonds.nl/bedankt-voor-jouw-sadaqah`);
+                    window.location.replace(`https://secure.zakat-deutschland.de/danke-fuer-deine-sadaqah`);
             }
         }
     })
@@ -352,7 +357,7 @@ const createPaymentIntent = async (amount) => {
         }
         var failedMessage = document.createElement("div");
         failedMessage.classList.add("failed-message");
-        failedMessage.textContent = "Er is een fout opgetreden. Vernieuw de pagina of controleer je verbinding als het probleem blijft.";
+        failedMessage.textContent = "Es ist ein Fehler aufgetreten. Wenn das Problem weiterhin besteht, aktualisieren Sie die Seite oder überprüfen Sie Ihre Verbindung.";
         failedMessage.style.color = "red";
         var referenceDiv = document.querySelector(".impact-tabs-menu.w-tab-menu");
         if (referenceDiv && referenceDiv.parentNode) {

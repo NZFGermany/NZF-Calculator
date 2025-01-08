@@ -239,6 +239,15 @@ const init = async () => {
             const resultCardPayment = await stripe.confirmCardPayment(payment_intent.clientSecret, {
                 payment_method: {
                     card: card,
+                    billing_details: {
+                        name: userdataclean.voornaam + " " + userdataclean.achternaam || 'Unknown Name',
+                        email: userdataclean.email || 'unknown@example.com',
+                        address: {
+                            line1: userdataclean.straat || 'Unknown Street',
+                            postal_code: userdataclean.postcode || '00000',
+                            city: userdataclean.stad || 'Unknown City',
+                        },
+                    },
                 },
                 return_url: `https://secure.zakat-deutschland.de/zahlung?paymentType=${paymentType}&paymentSort=card`
             })

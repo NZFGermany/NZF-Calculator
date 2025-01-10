@@ -266,7 +266,10 @@
         maandelijks: "Monatlich",
         voornaam: "Vorname",
         achternaam: "Nachname",
-        email: "Email"
+        email: "Email",
+        stad: "Stadt",
+        straat: "Stra\xDFe + Hausnummer",
+        postcode: "Postleizahl"
       };
       if (userslowlaneData.anoniem) {
         delete keyMappings.voornaam;

@@ -320,7 +320,10 @@ const createPaymentIntent = async (amount) => {
             maandelijks: "Monatlich",
             voornaam: "Vorname",
             achternaam: "Nachname",
-            email: "Email"
+            email: "Email",
+            stad: "Stadt",
+            straat: "Straße + Hausnummer",
+            postcode: "Postleizahl",
           };
 
         if(userslowlaneData.anoniem) {

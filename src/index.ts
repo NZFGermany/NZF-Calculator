@@ -177,6 +177,7 @@ const init = async () => {
         
         if (payment_intent.isMonthly) {
             window.location.replace(payment_intent.paymentUrl)
+            return;
         } else if (isIdealPayment) {
             const resultSepaPayment = await stripe.confirmSepaDebitPayment(payment_intent.clientSecret, {
                 payment_method: {
@@ -300,9 +301,13 @@ const createPaymentIntent = async (amount) => {
     try {
         let userslowlaneRawData = sessionStorage.getItem("userslowlane");
         let userslowlaneData = userslowlaneRawData ? JSON.parse(userslowlaneRawData) : {};
-        console.log(userslowlaneData)
+        console.log(userslowlaneData);
         
-        // Definieer de sleutels die je wilt hernoemen
+        const userTypeTranslations = {
+            "ondernemer": "Unternehmer",
+            "particulier": "Privatperson"
+        };
+
         const keyMappings = {
             zakatPay: "ZakatBetrag",
             sadakaValue: "SadaqahBetrag",
@@ -312,32 +317,37 @@ const createPaymentIntent = async (amount) => {
             transactiekosten: "Transaktionkosten",
             datum: "Zahlungsdatum",
             fastlane: "Fastlane Benutzer",
-            userType: "Type Zakat Zahler",
+            userType: "Type Zakat Zahler", // Hernoemen naar Duits
             userslowlane: "Slowlane Benutzer",
             educatiefonds: "Bildungsfonds",
             noodfonds: "Notfallfonds",
             woonfonds: "Wohnfonds",
-            //maandelijks: "Monatlich",
+            maandelijks: "Monatlich",
             voornaam: "Vorname",
             achternaam: "Nachname",
             email: "Email",
             stad: "Stadt",
             straat: "Straße + Hausnummer",
             postcode: "Postleizahl",
-          };
+        };
 
-        if(userslowlaneData.anoniem) {
+        if (userslowlaneData.anoniem) {
             delete keyMappings.voornaam;
             delete keyMappings.achternaam;
             delete keyMappings.email;
         }
-        
-        // Filter en hernoem de data gebaseerd op de mappings
+
         const filteredAndRenamedData = Object.keys(userslowlaneData)
             .filter(key => Object.keys(keyMappings).includes(key))
             .reduce((obj, key) => {
-                const newKey = keyMappings[key] || key; // Gebruik de nieuwe sleutelnaam als deze bestaat, anders de originele sleutel
-                obj[newKey] = userslowlaneData[key];
+                const newKey = keyMappings[key] || key; 
+
+                if (key === "userType" && userTypeTranslations[userslowlaneData[key]]) {
+                    obj[newKey] = userTypeTranslations[userslowlaneData[key]];
+                } else {
+                    obj[newKey] = userslowlaneData[key];
+                }
+
                 return obj;
             }, {});
 
@@ -351,7 +361,7 @@ const createPaymentIntent = async (amount) => {
             body: JSON.stringify({
                 amount: amount,
                 currency: 'eur',
-                userslowlaneData: JSON.stringify(filteredAndRenamedData) 
+                userslowlaneData: JSON.stringify(filteredAndRenamedData)
             })
         });
 
@@ -365,7 +375,7 @@ const createPaymentIntent = async (amount) => {
 
         var existingFailedMessage = document.querySelector(".failed-message");
         if (existingFailedMessage && existingFailedMessage.parentNode) {
-          existingFailedMessage.parentNode.removeChild(existingFailedMessage);
+            existingFailedMessage.parentNode.removeChild(existingFailedMessage);
         }
         var failedMessage = document.createElement("div");
         failedMessage.classList.add("failed-message");
@@ -373,13 +383,13 @@ const createPaymentIntent = async (amount) => {
         failedMessage.style.color = "red";
         var referenceDiv = document.querySelector(".impact-tabs-menu.w-tab-menu");
         if (referenceDiv && referenceDiv.parentNode) {
-          referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
+            referenceDiv.parentNode.insertBefore(failedMessage, referenceDiv);
         } else {
-          console.error("Element or parent of .impact-tabs-menu.w-tab-menu not found");
+            console.error("Element or parent of .impact-tabs-menu.w-tab-menu not found");
         }
         return null;
     }
-}
+};
 
 
 init();

@@ -148,6 +148,7 @@
       }
       if (payment_intent.isMonthly) {
         window.location.replace(payment_intent.paymentUrl);
+        return;
       } else if (isIdealPayment) {
         const resultSepaPayment = await stripe.confirmSepaDebitPayment(payment_intent.clientSecret, {
           payment_method: {
@@ -249,6 +250,10 @@
       let userslowlaneRawData = sessionStorage.getItem("userslowlane");
       let userslowlaneData = userslowlaneRawData ? JSON.parse(userslowlaneRawData) : {};
       console.log(userslowlaneData);
+      const userTypeTranslations = {
+        "ondernemer": "Unternehmer",
+        "particulier": "Privatperson"
+      };
       const keyMappings = {
         zakatPay: "ZakatBetrag",
         sadakaValue: "SadaqahBetrag",
@@ -259,11 +264,12 @@
         datum: "Zahlungsdatum",
         fastlane: "Fastlane Benutzer",
         userType: "Type Zakat Zahler",
+        // Hernoemen naar Duits
         userslowlane: "Slowlane Benutzer",
         educatiefonds: "Bildungsfonds",
         noodfonds: "Notfallfonds",
         woonfonds: "Wohnfonds",
-        //maandelijks: "Monatlich",
+        maandelijks: "Monatlich",
         voornaam: "Vorname",
         achternaam: "Nachname",
         email: "Email",
@@ -278,7 +284,11 @@
       }
       const filteredAndRenamedData = Object.keys(userslowlaneData).filter((key) => Object.keys(keyMappings).includes(key)).reduce((obj, key) => {
         const newKey = keyMappings[key] || key;
-        obj[newKey] = userslowlaneData[key];
+        if (key === "userType" && userTypeTranslations[userslowlaneData[key]]) {
+          obj[newKey] = userTypeTranslations[userslowlaneData[key]];
+        } else {
+          obj[newKey] = userslowlaneData[key];
+        }
         return obj;
       }, {});
       console.log("userslowlaneData to be sent:", filteredAndRenamedData);

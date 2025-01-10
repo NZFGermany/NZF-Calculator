@@ -317,7 +317,7 @@ const createPaymentIntent = async (amount) => {
             educatiefonds: "Bildungsfonds",
             noodfonds: "Notfallfonds",
             woonfonds: "Wohnfonds",
-            maandelijks: "Monatlich",
+            //maandelijks: "Monatlich",
             voornaam: "Vorname",
             achternaam: "Nachname",
             email: "Email",

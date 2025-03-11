@@ -1,29 +1,30 @@
 declare const STRIPE_KEY: string;
 
 const init = async () => {
-    let isIdealPayment = true;
+    let isSepaPayment = true;
     let isCardPayment = false;
+    let isPaypalPayment = false;
 
     const translateStripeError = (error) => {
-    switch (error) {
-        case 'Your card has been declined.':
-            return 'Ihre Karte wurde abgelehnt.';
-        case 'Your card has insufficient funds.':
-            return 'Ihre Karte hat unzureichende Mittel.';
-        case 'Your card has expired.':
-            return 'Ihre Karte ist abgelaufen.';
-        case 'Your card\'s security code is incorrect.':
-            return 'Der Sicherheitscode Ihrer Karte ist falsch.';
-        case 'An error occurred while processing your card. Try again in a little bit.':
-            return 'Beim Verarbeiten Ihrer Karte ist ein Fehler aufgetreten. Versuchen Sie es in Kürze erneut.';
-        case 'Your card number is invalid.':
-            return 'Ihre Kartennummer ist ungültig.';
-        case 'Your card was declined for making repeated attempts too frequently.':
-            return 'Ihre Karte wurde abgelehnt, weil zu oft wiederholte Versuche gemacht wurden.';
-        default:
-            return 'Ein unbekannter Fehler ist aufgetreten.';
-    }
-};
+        switch (error) {
+            case 'Your card has been declined.':
+                return 'Ihre Karte wurde abgelehnt.';
+            case 'Your card has insufficient funds.':
+                return 'Ihre Karte hat unzureichende Mittel.';
+            case 'Your card has expired.':
+                return 'Ihre Karte ist abgelaufen.';
+            case 'Your card\'s security code is incorrect.':
+                return 'Der Sicherheitscode Ihrer Karte ist falsch.';
+            case 'An error occurred while processing your card. Try again in a little bit.':
+                return 'Beim Verarbeiten Ihrer Karte ist ein Fehler aufgetreten. Versuchen Sie es in Kürze erneut.';
+            case 'Your card number is invalid.':
+                return 'Ihre Kartennummer ist ungültig.';
+            case 'Your card was declined for making repeated attempts too frequently.':
+                return 'Ihre Karte wurde abgelehnt, weil zu oft wiederholte Versuche gemacht wurden.';
+            default:
+                return 'Ein unbekannter Fehler ist aufgetreten.';
+        }
+    };
 
     const stripe = window.Stripe?.(STRIPE_KEY);
     if (!stripe) return;
@@ -34,8 +35,11 @@ const init = async () => {
     const ccStripeElement = document.querySelector<HTMLElement>('[data-element="cc_stripe"]');
     if (!ccStripeElement) return;
 
-    const idealStripeElement = document.querySelector<HTMLElement>('[data-element="ideal_stripe"]');
-    if (!idealStripeElement) return;
+    const sepaStripeElement = document.querySelector<HTMLElement>('[data-element="sepa_stripe"]');
+    if (!sepaStripeElement) return;
+
+    const paypalStripeElement = document.querySelector<HTMLElement>('[data-element="paypal_stripe"]');
+    if (!paypalStripeElement) return;
 
 
     const elements = stripe.elements();
@@ -71,8 +75,8 @@ const init = async () => {
         },
     });
     
-    // Mount the SEPA IBAN element to the page
-    sepaDebit.mount(idealStripeElement);
+    // Mount the SEPA element to the page
+    sepaDebit.mount(sepaStripeElement);
 
     const card = elements.create('card', {
         style: {
@@ -112,12 +116,18 @@ const init = async () => {
             var dataElement = tab.getAttribute('data-element');
 
             // Check if the clicked tab has a specific data-element value
-            if (dataElement === 'ideal_button') {
-                isIdealPayment = true;
+            if (dataElement === 'sepa_button') {
+                isSepaPayment = true;
                 isCardPayment = false;
+                isPaypalPayment = false;
             } else if (dataElement === 'card_button') {
                 isCardPayment = true;
-                isIdealPayment = false;
+                isSepaPayment = false;
+                isPaypalPayment = false;
+            } else if (dataElement === 'paypal_button') {
+                isCardPayment = false;
+                isSepaPayment = false;
+                isPaypalPayment = true;
             }
         });
     });
@@ -178,7 +188,7 @@ const init = async () => {
         if (payment_intent.isMonthly) {
             window.location.replace(payment_intent.paymentUrl)
             return;
-        } else if (isIdealPayment) {
+        } else if (isSepaPayment) {
             const resultSepaPayment = await stripe.confirmSepaDebitPayment(payment_intent.clientSecret, {
                 payment_method: {
                     sepa_debit: sepaDebit, 

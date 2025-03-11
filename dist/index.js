@@ -5,8 +5,9 @@
 
   // src/index.ts
   var init = async () => {
-    let isIdealPayment = true;
+    let isSepaPayment = true;
     let isCardPayment = false;
+    let isPaypalPayment = false;
     const translateStripeError = (error) => {
       switch (error) {
         case "Your card has been declined.":
@@ -36,8 +37,11 @@
     const ccStripeElement = document.querySelector('[data-element="cc_stripe"]');
     if (!ccStripeElement)
       return;
-    const idealStripeElement = document.querySelector('[data-element="ideal_stripe"]');
-    if (!idealStripeElement)
+    const sepaStripeElement = document.querySelector('[data-element="sepa_stripe"]');
+    if (!sepaStripeElement)
+      return;
+    const paypalStripeElement = document.querySelector('[data-element="paypal_stripe"]');
+    if (!paypalStripeElement)
       return;
     const elements = stripe.elements();
     const sepaDebit = elements.create("iban", {
@@ -68,7 +72,7 @@
         }
       }
     });
-    sepaDebit.mount(idealStripeElement);
+    sepaDebit.mount(sepaStripeElement);
     const card = elements.create("card", {
       style: {
         base: {
@@ -98,12 +102,18 @@
       tab.addEventListener("click", function(event) {
         event.preventDefault();
         var dataElement = tab.getAttribute("data-element");
-        if (dataElement === "ideal_button") {
-          isIdealPayment = true;
+        if (dataElement === "sepa_button") {
+          isSepaPayment = true;
           isCardPayment = false;
+          isPaypalPayment = false;
         } else if (dataElement === "card_button") {
           isCardPayment = true;
-          isIdealPayment = false;
+          isSepaPayment = false;
+          isPaypalPayment = false;
+        } else if (dataElement === "paypal_button") {
+          isCardPayment = false;
+          isSepaPayment = false;
+          isPaypalPayment = true;
         }
       });
     });
@@ -149,7 +159,7 @@
       if (payment_intent.isMonthly) {
         window.location.replace(payment_intent.paymentUrl);
         return;
-      } else if (isIdealPayment) {
+      } else if (isSepaPayment) {
         const resultSepaPayment = await stripe.confirmSepaDebitPayment(payment_intent.clientSecret, {
           payment_method: {
             sepa_debit: sepaDebit,
